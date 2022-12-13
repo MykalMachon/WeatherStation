@@ -1,5 +1,5 @@
 # Weather Station
-a software suite to measure and utilize weather at my apartment 🏔️🌡️
+a software suite to measure and utilize weather data at my apartment 🏔️🌡️
 
 ## Architecture
 
