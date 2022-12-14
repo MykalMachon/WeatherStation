@@ -28,7 +28,8 @@ I've intentionally decided not to use docker or this project. I *love* me some c
 
 ### Multiple applications
 
-I originally wanted to look into microservices for this project, but after doing some more research it became clear they're sort of impractical for something this small in scale. 
-If you're intersted in microservices, [this video](https://www.youtube.com/watch?v=zzMLg3Ys5vI&) was ultimately what made them "click" for me. Would highly recommend it. 
+I originally wanted to look into microservices for this project, but after doing some more research it became clear they're sort of impractical for something this small in scale. If you're intersted in microservices, [this video](https://www.youtube.com/watch?v=zzMLg3Ys5vI&) was ultimately what made them "click" for me. Would highly recommend it. 
 
-I've instead opted for a few small, distributed, applications. These are a lot *like* microservices (they server distinct purposes) but are not independently deployable. Meteor relies on Observer to fill the database, and staion relies on Meteor to fetch weather data. 
+I've instead opted for a few small, distributed, applications. These are a lot *like* microservices (they server distinct purposes) but are not independently deployable and do suffer from some (albeit, intentional) coupling. Meteor relies on Observer, Station relies on Meteor. If I was to go full microservice for the weather station we would probably end up with 2x more very loosely coupled apps, and a less efficient system overall (see [this great article on excessive loose coupling](https://cedanet.com.au/antipatterns/excessive-loose-coupling.php)). 
+
+By sticking with a few small apps I gain some ease in testing, maintenance, and simplicity that's inheirent in small apps, as well as the benefits in resiliency found in distributed systems. it seems like the right abstraction for this project (right now anyways.)
