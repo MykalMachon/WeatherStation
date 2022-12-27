@@ -1,0 +1,6 @@
+# build artifacts
+dist/
+__pycache__/
+
+# log files
+*.log*
