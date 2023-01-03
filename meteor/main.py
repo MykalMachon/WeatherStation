@@ -24,18 +24,10 @@ async def get_home():
         <body>
             <h1>Meteor API</h1>
             <p>This is the Meteor API used in WeatherStation</p>
+            <p>See <a href="/docs">here for documentation</a>
         </body>
     </html>
     """
-
-
-@app.get("/status")
-async def get_status():
-    return {
-        "web": True,
-        "data": True,
-        "misc": True
-    }
 
 # Weather
 
@@ -43,7 +35,7 @@ async def get_status():
 @app.get('/weather/')
 async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, None] = None):
     """Returns all weather in a date range as JSON.
-    By default, it returns the last days weather.
+    By default, it returns all of the last day's weather recordings. 
     """
     # TODO: start date calculations suck. Fix them.
     start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S") \
@@ -62,7 +54,7 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
 
     # fetch info from database
     query_str = f"""
-                   SELECT * 
+                   SELECT *
                    FROM weather
                    WHERE DATETIME(created_at) BETWEEN '{start_date_str}' AND '{end_date_str}';
                    """
@@ -84,16 +76,48 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
     }
 
 
-@app.get('/weather/temperature')
-async def get_temperature():
-    return {}
+@app.get('/weather/average')
+async def get_weather_average(start_date: Union[str, None] = None, end_date: Union[str, None] = None):
+    """Returns all weather averages in a date range.
+    By default, it returns the last days weather.
+    """
+    # TODO: start date calculations suck. Fix them.
+    start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S") \
+        if start_date is not None \
+        else datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d 00:00:00")
+    start_date_str = start_date.strftime("%Y-%m-%d %H:%M:%S")
 
+    end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S") \
+        if end_date is not None \
+        else datetime.now()
+    end_date_str = end_date.strftime("%Y-%m-%d %H:%M:%S")
 
-@app.get('/weather/humidity')
-async def get_humidity():
-    return {}
+        # connect to database
+    conn = get_sqlite_db(db_path=db_path)
+    cursor = conn.cursor()
 
+    # fetch info from database
+    query_str = f"""
+                    SELECT avg(temperature_hum) temperature_hum,
+                           avg(temperature_pres) temperature_pres,
+                           avg(humidity) humidity,
+                           avg(pressure) pressure
+                    FROM weather
+                    WHERE DATETIME(created_at) BETWEEN '{start_date_str}' and '{end_date_str}';
+                    """
+    print(query_str)
+    cursor.execute(query_str)
+    rows = cursor.fetchall()
 
-@app.get('/weather/pressure')
-async def get_pressure():
-    return {}
+    # zip the results with their row keys
+    results = [zip(row.keys(), row) for row in rows]
+
+        # return the data
+    return {
+        "meta": {
+            "type": "weather:average",
+            "start_date": start_date_str,
+            "end_date": end_date_str
+        },
+        "data": results
+    }
