@@ -1,13 +1,24 @@
 from typing import Union
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from services.database import get_sqlite_db
 
 app = FastAPI()
+
+# setup cors
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
 
 # generics to be used throughout
 db_path = f"{Path(__file__).parent.resolve().parent.resolve()}/weather.db"
@@ -40,12 +51,12 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
     # TODO: start date calculations suck. Fix them.
     start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S") \
         if start_date is not None \
-        else datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d 00:00:00")
+        else datetime.strptime(datetime.now(timezone.utc).strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d 00:00:00")
     start_date_str = start_date.strftime("%Y-%m-%d %H:%M:%S")
 
     end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S") \
         if end_date is not None \
-        else datetime.now()
+        else datetime.now(timezone.utc)
     end_date_str = end_date.strftime("%Y-%m-%d %H:%M:%S")
 
     # connect to database
@@ -56,9 +67,9 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
     query_str = f"""
                    SELECT *
                    FROM weather
-                   WHERE DATETIME(created_at) BETWEEN '{start_date_str}' AND '{end_date_str}';
+                   WHERE DATETIME(created_at) BETWEEN '{start_date_str}' AND '{end_date_str}'
+                   ORDER BY created_at DESC;
                    """
-
     cursor.execute(query_str)
     rows = cursor.fetchall()
 
@@ -76,6 +87,32 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
     }
 
 
+@app.get('/weather/now')
+async def get_weather_now():
+    """Returns the most recent weather 
+    information from the SQLite database.
+    """
+
+    # connect to database
+    conn = get_sqlite_db(db_path=db_path)
+    cursor = conn.cursor()
+    query_string = """
+        SELECT recording_id, temperature_hum, temperature_pres, humidity, pressure, MAX(created_at) as created_at
+        FROM weather;
+    """
+    cursor.execute(query_string)
+    rows = cursor.fetchmany()
+
+    results = [zip(row.keys(), row) for row in rows]
+
+    return {
+        "meta": {
+            "type": "weather",
+        },
+        "data": results[0]
+    }
+
+
 @app.get('/weather/average')
 async def get_weather_average(start_date: Union[str, None] = None, end_date: Union[str, None] = None):
     """Returns all weather averages in a date range.
@@ -84,15 +121,15 @@ async def get_weather_average(start_date: Union[str, None] = None, end_date: Uni
     # TODO: start date calculations suck. Fix them.
     start_date = datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S") \
         if start_date is not None \
-        else datetime.strptime(datetime.now().strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d 00:00:00")
+        else datetime.strptime(datetime.now(timezone.utc).strftime("%Y-%m-%d 00:00:00"), "%Y-%m-%d 00:00:00")
     start_date_str = start_date.strftime("%Y-%m-%d %H:%M:%S")
 
     end_date = datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S") \
         if end_date is not None \
-        else datetime.now()
+        else datetime.now(timezone.utc)
     end_date_str = end_date.strftime("%Y-%m-%d %H:%M:%S")
 
-        # connect to database
+    # connect to database
     conn = get_sqlite_db(db_path=db_path)
     cursor = conn.cursor()
 
@@ -105,14 +142,13 @@ async def get_weather_average(start_date: Union[str, None] = None, end_date: Uni
                     FROM weather
                     WHERE DATETIME(created_at) BETWEEN '{start_date_str}' and '{end_date_str}';
                     """
-    print(query_str)
     cursor.execute(query_str)
     rows = cursor.fetchall()
 
     # zip the results with their row keys
     results = [zip(row.keys(), row) for row in rows]
 
-        # return the data
+    # return the data
     return {
         "meta": {
             "type": "weather:average",
