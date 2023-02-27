@@ -1,0 +1,86 @@
+---
+const response = await fetch('http://localhost:5000/weather/now');
+const { data } = await response.json();
+
+const lastChecked = new Date(`${data.created_at} UTC`);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Weather Station</title>
+  </head>
+  <body>
+    <h1>Weather Station 🌡️</h1>
+    <section class="headline">
+      <div class="headline__item">
+        <small>temperature</small>
+        <p>{Math.floor(data.temperature_pres)} °C</p>
+      </div>
+      <div class="headline__item">
+        <small>pressure</small>
+        <p>{Math.floor(data.pressure)} mb</p>
+      </div>
+      <div class="headline__item">
+        <small>humidity</small>
+        <p>{Math.floor(data.humidity)} %</p>
+      </div>
+    </section>
+    <p>
+      last measured at {lastChecked.toLocaleTimeString('en-CA')}
+      {lastChecked.toLocaleDateString('en-CA')}
+    </p>
+    <section>
+      <h2>Over Time</h2>
+      <p>...chart is going to go here</p>
+    </section>
+  </body>
+</html>
+
+<style>
+  @import 'open-props/style';
+  body {
+    background: var(--gray-2);
+    font-family: var(--font-sans);
+  }
+
+  .headline {
+    display: grid;
+    max-width: 700px;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .headline__item {
+    background: var(--gray-1);
+    border: 1px solid var(--gray-4);
+    border-right: none;
+    padding: var(--size-3);
+  }
+
+  .headline__item:first-of-type {
+    border-left: 1px solid var(--gray-4);
+    border-top-left-radius: var(--radius-2);
+    border-bottom-left-radius: var(--radius-2);
+  }
+
+  .headline__item:last-of-type {
+    border-right: 1px solid var(--gray-4);
+    border-top-right-radius: var(--radius-2);
+    border-bottom-right-radius: var(--radius-2);
+  }
+
+  .headline__item small {
+    font-family: var(--font-mono);
+    color: var(--gray-8);
+  }
+
+  .headline__item p {
+    font-size: var(--font-size-5);
+    font-weight: var(--font-weight-8);
+    margin: var(--size-2) 0 0 0;
+    color: var(--gray-9);
+  }
+</style>
