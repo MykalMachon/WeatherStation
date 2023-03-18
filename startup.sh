@@ -1,6 +1,9 @@
+$HOST = ""
+$PORT = ""
+
 # launch meteor
 cd ./meteor/
-gunicorn main:app --bind $HOST -k uvicorn.workers.UvicornWorker &
+gunicorn main:app --bind <REPLACE_WITH_HOST> -k uvicorn.workers.UvicornWorker &
 
 # return home 
 cd ../

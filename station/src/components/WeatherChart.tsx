@@ -39,7 +39,7 @@ const WeatherChart = ({ data }: WeatherChartProps) => {
   };
 
   return (
-    <section style={{ maxHeight: '45vh' }}>
+    <section>
       <Line data={chartData} options={options} />
     </section>
   );

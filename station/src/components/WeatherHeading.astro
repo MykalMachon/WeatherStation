@@ -1,0 +1,83 @@
+---
+const response = await fetch(`${import.meta.env.METEOR_URL}/weather/now`);
+const { data } = await response.json();
+
+const lastChecked = new Date(`${data.created_at} UTC`);
+---
+
+<div class="headline__wrapper" data-temp={Math.floor(data.temperature_pres)}>
+  <section class="headline">
+    <header class="headline__big">
+      <small>Temperature</small>
+      <p>{Math.floor(data.temperature_pres)}°C</p>
+    </header>
+    <div>
+      <small>Humidity</small>
+      <p>{Math.floor(data.humidity)} %</p>
+    </div>
+    <div>
+      <small>Pressure</small>
+      <p>{Math.floor(data.pressure)}</p>
+    </div>
+  </section>
+</div>
+<script is:inline>
+  const root = document.documentElement;
+  const temp = parseInt(document.querySelector('.headline__wrapper').dataset.temp);
+  const shift = temp * 2
+
+  root.style.setProperty('--base-hue', temp > 15 ? 200 - shift : 200 + shift);
+</script>
+<p class="centered-text">last measured at {lastChecked.toLocaleTimeString('en-CA')} on {lastChecked.toLocaleDateString('en-CA')} </p>
+
+<style>
+  .headline__wrapper {
+    width: 100%;
+    background: hsla(var(--base-hue), var(--base-sat), var(--base-light), 20%);
+    padding: var(--size-5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .headline {
+    border-radius: var(--radius-2);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    text-align: center;
+    gap: var(--size-3);
+  }
+
+  small {
+    font-family: var(--font-mono);
+  }
+
+  .headline__big {
+    grid-column: 1/3;
+  }
+
+  .headline__big small {
+    font-size: var(--font-size-3);
+  }
+
+  .headline__big p {
+    font-size: var(--font-size-8);
+    font-weight: var(--font-weight-8);
+    margin: 0;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .stats div {
+    margin: 0 var(--size-3);
+  }
+
+  .stats p {
+    font-weight: var(--font-weight-8);
+    margin: var(--size-2) 0;
+  }
+
+</style>

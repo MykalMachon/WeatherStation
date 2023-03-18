@@ -1,13 +1,9 @@
 ---
 import WeatherChart from '../components/WeatherChart';
-
-const response = await fetch(`${import.meta.env.METEOR_URL}/weather/now`);
-const { data } = await response.json();
+import WeatherHeading from '../components/WeatherHeading.astro';
 
 const todaysWeather = await fetch(`${import.meta.env.METEOR_URL}/weather/`);
 const { data: weatherData } = await todaysWeather.json();
-
-const lastChecked = new Date(`${data.created_at} UTC`);
 ---
 
 <html lang="en">
@@ -19,73 +15,47 @@ const lastChecked = new Date(`${data.created_at} UTC`);
     <title>Weather Station</title>
   </head>
   <body>
-    <h1>Weather Station 🌡️</h1>
-    <section class="headline">
-      <div class="headline__item">
-        <small>temperature</small>
-        <p>{Math.floor(data.temperature_pres)} °C</p>
-      </div>
-      <div class="headline__item">
-        <small>pressure</small>
-        <p>{Math.floor(data.pressure)} mb</p>
-      </div>
-      <div class="headline__item">
-        <small>humidity</small>
-        <p>{Math.floor(data.humidity)} %</p>
-      </div>
-    </section>
-    <p>
-      last measured at {lastChecked.toLocaleTimeString('en-CA')}
-      {lastChecked.toLocaleDateString('en-CA')}
-    </p>
+    <WeatherHeading />
     <section>
-      <h2>Todays Temperature</h2>
+      <h2 class="centered-text">Todays Temperature</h2>
       <WeatherChart data={weatherData} client:idle />
     </section>
   </body>
 </html>
 
-<style>
+<style is:global>
   @import 'open-props/style';
+
+  * {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --base-hue: 200;
+    --base-sat: 100%;
+    --base-light: 60%;
+
+    --card-temp: hsla(var(--base-hue), var(--base-sat), var(--base-light), 100%);
+    --card-light: hsla(var(--base-hue), var(--base-sat), var(--base-light), 50%);
+
+    --card-gradient: linear-gradient(45deg, var(--card-temp), var(--card-light));
+
+    --bg-temp: hsla(var(--base-hue), var(--base-sat), 80%, 100%);
+    --bg-light: hsla(var(--base-hue), var(--base-sat), 80%, 50%);
+
+    --bg-gradient: linear-gradient(45deg, var(--bg-temp), var(--bg-light));
+  }
+
   body {
+    min-height: 100vh;
+    height: 100%;
     background: var(--gray-2);
     font-family: var(--font-sans);
+    background: var(--bg-light);
+    margin: 0;
   }
 
-  .headline {
-    display: grid;
-    max-width: 700px;
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-
-  .headline__item {
-    background: var(--gray-1);
-    border: 1px solid var(--gray-4);
-    border-right: none;
-    padding: var(--size-3);
-  }
-
-  .headline__item:first-of-type {
-    border-left: 1px solid var(--gray-4);
-    border-top-left-radius: var(--radius-2);
-    border-bottom-left-radius: var(--radius-2);
-  }
-
-  .headline__item:last-of-type {
-    border-right: 1px solid var(--gray-4);
-    border-top-right-radius: var(--radius-2);
-    border-bottom-right-radius: var(--radius-2);
-  }
-
-  .headline__item small {
-    font-family: var(--font-mono);
-    color: var(--gray-8);
-  }
-
-  .headline__item p {
-    font-size: var(--font-size-5);
-    font-weight: var(--font-weight-8);
-    margin: var(--size-2) 0 0 0;
-    color: var(--gray-9);
+  .centered-text {
+    text-align: center;
   }
 </style>
