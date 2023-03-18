@@ -18,7 +18,10 @@ const WeatherChart = ({ data }: WeatherChartProps) => {
     responsive: true,
   };
 
-  const labels = data.map((data) => data['created_at']);
+  const labels = data.map((data) => {
+    const date = new Date(`${data['created_at']} UTC`);
+    return date.toLocaleTimeString('en-CA')
+  });
 
   const chartData = {
     labels,
@@ -39,7 +42,7 @@ const WeatherChart = ({ data }: WeatherChartProps) => {
   };
 
   return (
-    <section>
+    <section style={{padding: '32px'}}>
       <Line data={chartData} options={options} />
     </section>
   );
