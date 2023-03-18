@@ -68,7 +68,7 @@ async def get_weather(start_date: Union[str, None] = None, end_date: Union[str, 
                    SELECT *
                    FROM weather
                    WHERE DATETIME(created_at) BETWEEN '{start_date_str}' AND '{end_date_str}'
-                   ORDER BY created_at DESC;
+                   ORDER BY created_at ASC;
                    """
     cursor.execute(query_str)
     rows = cursor.fetchall()
