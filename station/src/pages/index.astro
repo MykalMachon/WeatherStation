@@ -1,12 +1,11 @@
 ---
-import WeatherChart from "../components/WeatherChart";
+import WeatherChart from '../components/WeatherChart';
 
-const response = await fetch('http://localhost:5000/weather/now');
+const response = await fetch(`${import.meta.env.METEOR_URL}/weather/now`);
 const { data } = await response.json();
 
-const todaysWeather = await fetch('http://localhost:5000/weather/?start_date=2023-02-01%2000:00:00&end_date=2023-02-02%2000:00:00')
+const todaysWeather = await fetch(`${import.meta.env.METEOR_URL}/weather/`);
 const { data: weatherData } = await todaysWeather.json();
-console.log(weatherData);
 
 const lastChecked = new Date(`${data.created_at} UTC`);
 ---
